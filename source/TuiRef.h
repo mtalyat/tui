@@ -189,7 +189,7 @@ inline const char* tuiSkipToNextChar(const char* str, TuiDebugInfo* debugInfo = 
 
 inline const char* tuiSkipToAfterNextClosingBrace(const char* str, TuiDebugInfo* debugInfo, bool openingBraceAlreadyAdded)
 {
-    const char* s = str;
+    const char* s = str - 1; //the while loop below adds 1 but I hate do whiles, so this hack is here
     int depthCount = (openingBraceAlreadyAdded ? 1 : 0);
     while(true)
     {
