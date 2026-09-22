@@ -1,22 +1,22 @@
 {
     {
-        elapsedTime = 0.01150811929255724,
-        filename = "data.json",
+        elapsedTime = 7.0296227931976318e-06,
+        filename = "data.tui",
     },
     {
-        elapsedTime = 0.011006737127900124,
+        elapsedTime = 9.5833092927932739e-07,
         filename = "empty.tui",
     },
     {
-        elapsedTime = 0.012269436381757259,
+        elapsedTime = 0.001049513928592205,
         filename = "functions.tui",
     },
     {
-        elapsedTime = 0.014164093881845474,
+        elapsedTime = 0.0028864899650216103,
         filename = "loop.tui",
     },
     {
-        elapsedTime = 0.011234316043555737,
+        elapsedTime = 0.00020503811538219452,
         filename = "print.tui",
     },
 }

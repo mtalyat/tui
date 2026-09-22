@@ -1,8 +1,9 @@
-func = function()
+test = function()
 {
-}
+    func = function(){}
 
-for(i = 0, i < 1000, i++)
-{
-    func()
+    for(i = 0, i < 1000, i++)
+    {
+        func()
+    }
 }

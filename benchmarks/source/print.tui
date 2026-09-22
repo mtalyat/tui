@@ -1,4 +1,7 @@
-for(i = 0, i < 100, i++)
+test = function()
 {
-    print("Iteration: ", i)
+    for(i = 0, i < 100, i++)
+    {
+        print("Iteration: ", i)
+    }
 }
