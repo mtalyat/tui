@@ -1,0 +1,57 @@
+# Get the path to the interpreter executable
+TUI_EXE = "..\\interpreter\\windows\\tui\\x64\\Release\\tui.exe"
+
+# Number of times to run each test
+# TEST_ITERATIONS = 1.0
+TEST_ITERATIONS = 256.0
+
+# Get benchmark files to run
+filenames = file.directoryContents("source")
+
+# Save results in this list
+results = []
+
+runBenchmark = function(filename)
+{
+    print("Running benchmark for file: ", filename)
+
+    totalTime = 0.0
+
+    for(i = 0, i < TEST_ITERATIONS, i++)
+    {
+        # Get starting time
+        startTime = time.now()
+
+        # Run the benchmark file
+        exec("\"" + TUI_EXE + "\" source\\" + filename)
+
+        # Get ending time
+        endTime = time.now()
+
+        # Calculate and accumulate elapsed time
+        elapsedTime = endTime - startTime
+        totalTime += elapsedTime
+    }
+
+    # Calculate average elapsed time
+    elapsedTime = totalTime / TEST_ITERATIONS
+
+    # Add result to the list of results
+    result = {filename = filename, elapsedTime = elapsedTime}
+    table.insert(results, result)
+}
+
+# Run each benchmark file
+for(filename in filenames)
+{
+    runBenchmark(filename)
+}
+
+# Print all results
+for(result in results)
+{
+    print("File: ", result.filename, " - Elapsed Time: ", result.elapsedTime, " seconds")
+}
+
+# Save results to file
+file.save("results.tui", results)
