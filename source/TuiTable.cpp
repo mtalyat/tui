@@ -1,6 +1,6 @@
 #include "TuiTable.h"
 
-bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiDebugInfo* debugInfo, TuiRef** resultRef)
+bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef)
 {
     const char* s = tuiSkipToNextChar(str, debugInfo);
     
@@ -27,11 +27,11 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         else
         {
             
-            TuiRef* valueRef = TuiRef::loadExpression(s,
+            TuiPointer<TuiRef> valueRef = TuiRef::loadExpression(s,
                                                       endptr,
                                                       nullptr,
                                                       nullptr,
-                                                      this,
+                                                      createPointerFromThis<TuiTable>(),
                                                       debugInfo);
             
             if(resultRef)
@@ -47,7 +47,6 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
             }
             else
             {
-                valueRef->release();
             }
             
             s = tuiSkipToNextChar(*endptr, debugInfo, true);
@@ -72,7 +71,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         
         TuiTokenMap tokenMap;
         
-        TuiStatement* statement = TuiFunction::serializeForStatement(s, endptr, this, debugInfo, true, isWhileLoop);
+        TuiStatement* statement = TuiFunction::serializeForStatement(s, endptr, createPointerFromThis<TuiTable>(), debugInfo, true, isWhileLoop);
         if(!statement)
         {
             return false;
@@ -83,26 +82,24 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         // the code below up until calling the statement is very similar to TuiFunction::call()
         // changes made here should probably be made there or it all could be factored out.
         TuiFunctionCallData callData;
-        callData.thisTable = this;
+        callData.thisTable = createPointerFromThis<TuiTable>();
         
         for(auto& varNameAndToken : tokenMap.capturedTokensByVarName)
         {
             if(tokenMap.refsByToken.count(varNameAndToken.second) != 0)
             {
-                TuiRef* var = tokenMap.refsByToken[varNameAndToken.second];
-                var->retain();
+                TuiPointer<TuiRef> var = tokenMap.refsByToken[varNameAndToken.second];
                 callData.locals[varNameAndToken.second] = var;
                 callData.localTokensByStringKey[varNameAndToken.first] = varNameAndToken.second;
             }
             else
             {
-                TuiTable* parentTable = this;
+                TuiPointer<TuiTable> parentTable = createPointerFromThis<TuiTable>();
                 while(parentTable)
                 {
                     if(parentTable->objectsByStringKey.count(varNameAndToken.first) != 0)
                     {
-                        TuiRef* var = parentTable->objectsByStringKey[varNameAndToken.first];
-                        var->retain();
+                        TuiPointer<TuiRef> var = parentTable->objectsByStringKey[varNameAndToken.first];
                         callData.locals[varNameAndToken.second] = var;
                         callData.localTokensByStringKey[varNameAndToken.first] = varNameAndToken.second;
                         break;
@@ -112,13 +109,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
             }
         }
         
-        TuiRef* result = TuiFunction::runStatement(statement,  nullptr, this, &tokenMap, &callData, debugInfo);
-        delete statement;
-        
-        for(auto& tokenAndRef : callData.locals)
-        {
-            tokenAndRef.second->release();
-        }
+        TuiPointer<TuiRef> result = TuiFunction::runStatement(statement,  nullptr, createPointerFromThis<TuiTable>(), &tokenMap, &callData, debugInfo);
         
         if(result)
         {
@@ -137,17 +128,16 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         
         bool expressionPass = true;
         
-        TuiRef* expressionResult = TuiRef::loadExpression(s,
+        TuiPointer<TuiRef> expressionResult = TuiRef::loadExpression(s,
                                                           endptr,
                                                           nullptr, //existing
                                                           nullptr, //leftValue
-                                                          this, //parent
+                                                          createPointerFromThis<TuiTable>(), //parent
                                                           debugInfo);
         s = tuiSkipToNextChar(*endptr, debugInfo);
         if(expressionResult)
         {
             expressionPass = expressionResult->boolValue();
-            expressionResult->release();
         }
         else
         {
@@ -241,17 +231,16 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                         
                         bool expressionPass = true;
                         
-                        TuiRef* expressionResult = TuiRef::loadExpression(s,
+                        TuiPointer<TuiRef> expressionResult = TuiRef::loadExpression(s,
                                                                          endptr,
                                                                          nullptr, //existing
                                                                          nullptr, //leftValue
-                                                                         this, //parent
+                                                                         createPointerFromThis<TuiTable>(), //parent
                                                                          debugInfo);
                         s = tuiSkipToNextChar(*endptr, debugInfo);
                         if(expressionResult)
                         {
                             expressionPass = expressionResult->boolValue();
-                            expressionResult->release();
                         }
                         else
                         {
@@ -314,16 +303,16 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         return true; //return now, we are done
     }
     
-    TuiRef* enclosingRef = nullptr;
+    TuiPointer<TuiRef> enclosingRef = nullptr;
     std::string finalKey = "";
     int finalIndex = -1; //todo this probably isn't actually used, wasn't needed?
     bool accessedParentVariable = false;
     
     //todo should this be released?
-    TuiRef* existingObjectRef = loadValue(s,
+    TuiPointer<TuiRef> existingObjectRef = loadValue(s,
                                           endptr,
                                           nullptr,
-                                          this,
+                                          createPointerFromThis<TuiTable>(),
                                           debugInfo,
                                           &enclosingRef,
                                           &finalKey,
@@ -341,11 +330,11 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
             existingObjectRef = nullptr;
         }
         
-        TuiRef* valueRef = TuiRef::loadExpression(s,
+        TuiPointer<TuiRef> valueRef = TuiRef::loadExpression(s,
                                                   endptr,
                                                   existingObjectRef,
                                                   nullptr,
-                                                  this,
+                                                  createPointerFromThis<TuiTable>(),
                                                   debugInfo);
         
         s = tuiSkipToNextChar(*endptr, debugInfo, true);
@@ -361,9 +350,8 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    TuiRef* copyRef = valueRef->copy();
-                    ((TuiTable*)enclosingRef)->set(finalKey, copyRef);
-                    copyRef->release();
+                    TuiPointer<TuiRef> copyRef = valueRef->copy();
+                    Tui::castPointer<TuiTable>(enclosingRef)->set(finalKey, copyRef);
                 }
                 else if(finalIndex >= 0)
                 {
@@ -371,23 +359,21 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    TuiRef* copyRef = valueRef->copy();
-                    ((TuiTable*)enclosingRef)->replace(finalIndex, copyRef);
-                    copyRef->release();
+                    TuiPointer<TuiRef> copyRef = valueRef->copy();
+                    Tui::castPointer<TuiTable>(enclosingRef)->replace(finalIndex, copyRef);
                 }
-                else if(existingObjectRef && existingObjectRef->type() == Tui_ref_type_TABLE && ((TuiTable*)existingObjectRef)->arrayObjects.size() == 1)
+                else if(existingObjectRef && existingObjectRef->type() == Tui_ref_type_TABLE && Tui::castPointer<TuiTable>(existingObjectRef)->arrayObjects.size() == 1)
                 {
-                    TuiRef* arrayObject = ((TuiTable*)existingObjectRef)->arrayObjects[0];
+                    TuiPointer<TuiRef> arrayObject = (Tui::castPointer<TuiTable>(existingObjectRef)->arrayObjects[0]);
                     if(arrayObject->type() == Tui_ref_type_NUMBER)
                     {
                         if(enclosingRef->type() != Tui_ref_type_TABLE)
                         {
                             TuiError("Unimplemented");
                         }
-                        int indexToUse = ((TuiNumber*)arrayObject)->value;
-                        TuiRef* copyRef = valueRef->copy();
-                        ((TuiTable*)enclosingRef)->replace(indexToUse, copyRef);
-                        copyRef->release();
+                        int indexToUse = (Tui::castPointer<TuiNumber>(arrayObject)->value);
+                        TuiPointer<TuiRef> copyRef = valueRef->copy();
+                        Tui::castPointer<TuiTable>(enclosingRef)->replace(indexToUse, copyRef);
                     }
                 }
             }
@@ -402,7 +388,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    ((TuiTable*)enclosingRef)->set(finalKey, valueRef);
+                    Tui::castPointer<TuiTable>(enclosingRef)->set(finalKey, valueRef);
                 }
                 else if(finalIndex >= 0)
                 {
@@ -410,7 +396,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    ((TuiTable*)enclosingRef)->replace(finalIndex, valueRef);
+                    Tui::castPointer<TuiTable>(enclosingRef)->replace(finalIndex, valueRef);
                 }
             }
             else
@@ -421,7 +407,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    ((TuiTable*)enclosingRef)->set(finalKey, nullptr);
+                    Tui::castPointer<TuiTable>(enclosingRef)->set(finalKey, nullptr);
                 }
                 else if(finalIndex >= 0)
                 {
@@ -429,7 +415,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
                     {
                         TuiError("Unimplemented");
                     }
-                    ((TuiTable*)enclosingRef)->replace(finalIndex, valueRef);
+                    Tui::castPointer<TuiTable>(enclosingRef)->replace(finalIndex, valueRef);
                 }
             }
         }
@@ -440,13 +426,11 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         
         if(enclosingRef)
         {
-            enclosingRef->release();
             enclosingRef = nullptr;
         }
         
         if(valueRef)
         {
-            valueRef->release();
             valueRef = nullptr;
         }
         
@@ -478,7 +462,6 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
     {
         if(enclosingRef)
         {
-            enclosingRef->release();
             enclosingRef = nullptr;
         }
         
@@ -488,21 +471,21 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
         if(*s == '\0' || operatorOr || operatorAnd || *s == ',' || *s == '\n' || *s == '}' || *s == ']' || *s == ')' || TuiExpressionOperatorsSet.count(*s) != 0)
         {
             //todo memory problems in here
-            TuiRef* leftValue = existingObjectRef;
+            TuiPointer<TuiRef> leftValue = existingObjectRef;
             
             if(!leftValue && !finalKey.empty())
             {
-                leftValue = new TuiString(finalKey);
+                leftValue = Tui::createPointer<TuiString>(finalKey);
             }
             
-            TuiRef* valueRef = leftValue;
+            TuiPointer<TuiRef> valueRef = leftValue;
             if(valueRef)
             {
                 valueRef = TuiRef::loadExpression(s,
                                                   endptr,
                                                   nullptr,
                                                   leftValue,
-                                                  this,
+                                                  createPointerFromThis<TuiTable>(),
                                                   debugInfo);
                 
                 if(!valueRef)
@@ -549,13 +532,13 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
 }
 
 
-TuiTable* TuiTable::initWithHumanReadableString(const char* str, char** endptr, TuiTable* parent, TuiDebugInfo* debugInfo, TuiRef** resultRef, TuiTable* inTable)
+TuiPointer<TuiTable> TuiTable::initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef, TuiPointer<TuiTable> inTable)
 {
-    TuiTable* table = inTable;
+    TuiPointer<TuiTable> table = inTable;
     
     if(!table)
     {
-        table = new TuiTable(parent);
+        table = Tui::createPointer<TuiTable>(parent);
     }
     
     const char* s = tuiSkipToNextChar(str, debugInfo);
@@ -595,7 +578,7 @@ TuiTable* TuiTable::initWithHumanReadableString(const char* str, char** endptr, 
 }
 
 
-void TuiTable::printSingleSubObject(std::string& debugString, int indent, TuiRef* object)
+void TuiTable::printSingleSubObject(std::string& debugString, int indent, TuiPointer<TuiRef> object)
 {
     if(indent > 128)
     {
@@ -700,7 +683,7 @@ void TuiTable::printHumanReadableString(std::string& debugString, int indent)
     }
     
     
-    for(TuiRef* object : arrayObjects)
+    for(TuiPointer<TuiRef> object : arrayObjects)
     {
         for(int i = 0; i < indent; i++)
         {
@@ -800,7 +783,7 @@ void TuiTable::serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
         buffer[(*currentOffset)++] = Tui_binary_type_END_MARKER;
     }
     
-    for(TuiRef* object : arrayObjects)
+    for(TuiPointer<TuiRef> object : arrayObjects)
     {
         if(object)
         {

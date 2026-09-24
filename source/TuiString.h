@@ -20,7 +20,7 @@ public://functions
     virtual std::string getStringValue() {return value;}
     virtual double getNumberValue() {return atof(value.c_str());}
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiRef* other) {return other && other->type() == Tui_ref_type_STRING && ((TuiString*)other)->value == value;}
+    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_STRING && Tui::castPointer<TuiString>(other)->value == value;}
     
     virtual void printHumanReadableString(std::string& debugString, int indent = 0) {
         debugString += "\"" + getStringValue() + "\"";
@@ -29,12 +29,12 @@ public://functions
     TuiString(const std::string& value_) : TuiRef() {value = value_;}
     virtual ~TuiString() {};
     
-    virtual TuiRef* copy()
+    virtual TuiPointer<TuiRef> copy()
     {
-        return new TuiString(value);
+        return Tui::createPointer<TuiString>(value);
     }
-    virtual void assign(TuiRef* other) {
-        value = ((TuiString*)other)->value;
+    virtual void assign(TuiPointer<TuiRef> other) {
+        value = (Tui::castPointer<TuiString>(other)->value);
     };
     
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)

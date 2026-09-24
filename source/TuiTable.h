@@ -16,72 +16,55 @@
 
 class TuiTable : public TuiRef {
 public:
-    TuiTable* parentTable = nullptr;
+    TuiPointer<TuiTable> parentTable = nullptr;
     
-    std::vector<TuiRef*> arrayObjects; // these members are public for ease/speed of iteration, but it's often best to use the get/set methods instead
-    std::map<uint32_t, TuiRef*> objectsByNumberKey;
-    std::map<std::string, TuiRef*> objectsByStringKey;
+    std::vector<TuiPointer<TuiRef>> arrayObjects; // these members are public for ease/speed of iteration, but it's often best to use the get/set methods instead
+    std::map<uint32_t, TuiPointer<TuiRef>> objectsByNumberKey;
+    std::map<std::string, TuiPointer<TuiRef>> objectsByStringKey;
     
     std::set<uint8_t> set8; //these sets are for when you need small and fast. Use table.set8Add(t, 32) and table.set8Remove(t, 32)
     std::set<uint16_t> set16;
     std::set<uint32_t> set32;
     std::set<uint64_t> set64; //note currently all numbers in tui scripts are read as doubles and stored in TuiNumbers, so a very large integer can loose precision
     
-    std::function<void(TuiRef* table, const std::string& key, TuiRef* value)> onSet;
+    std::function<void(TuiPointer<TuiRef> table, const std::string& key, TuiPointer<TuiRef> value)> onSet;
     
 private:
     
-    void printSingleSubObject(std::string& debugString, int indent, TuiRef* object);
+    void printSingleSubObject(std::string& debugString, int indent, TuiPointer<TuiRef> object);
 
 public://functions
     
-    TuiTable(TuiTable* parentTable_ = nullptr) : TuiRef() {parentTable = parentTable_;}
-    TuiTable(const std::string& tableString, TuiTable* parentTable_ = nullptr) : TuiRef() {
+    TuiTable(TuiPointer<TuiTable> parentTable_ = nullptr) : TuiRef() {parentTable = parentTable_;}
+    TuiTable(const std::string& tableString, TuiPointer<TuiTable> parentTable_ = nullptr) : TuiRef() {
         TuiDebugInfo debugInfo;
         TuiDebugInfoPush(&debugInfo, "table string construct", 1);
         const char* cString = tableString.c_str();
         char* endPtr;
         
-        TuiTable::initWithHumanReadableString(cString, &endPtr, parentTable_, &debugInfo, nullptr, this);
+        TuiTable::initWithHumanReadableString(cString, &endPtr, parentTable_, &debugInfo, nullptr, createPointerFromThis<TuiTable>());
     }
     
-    static TuiTable* initWithHumanReadableString(const char* str, char** endptr, TuiTable* parent, TuiDebugInfo* debugInfo, TuiRef** resultRef = nullptr, TuiTable* inTable = nullptr);
+    static TuiPointer<TuiTable> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef = nullptr, TuiPointer<TuiTable> inTable = nullptr);
     
-    virtual ~TuiTable() {
-        for(TuiRef* ref : arrayObjects)
-        {
-            if(ref)
-            {
-                ref->release();
-            }
-        }
-        for(auto& kv : objectsByNumberKey)
-        {
-            kv.second->release();
-        }
-        for(auto& kv : objectsByStringKey)
-        {
-            kv.second->release();
-        }
-    };
-    
+    virtual ~TuiTable() {}
+
     
     virtual uint8_t type() { return Tui_ref_type_TABLE; }
     virtual std::string getTypeName() {return "table";}
     virtual std::string getStringValue() {return "table";}
     virtual std::string getDebugStringValue() {return getDebugString();}
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiRef* other) {return other == this;}
+    virtual bool isEqual(TuiPointer<TuiRef> other) {return other.get() == this;}
     
-    virtual TuiRef* copy() //NOTE! This is not a true copy, use trueCopy() below. copy() is called internally when assigning vars, but tables, function, and userdata are treated like pointers
+    virtual TuiPointer<TuiRef> copy() //NOTE! This is not a true copy, use trueCopy() below. copy() is called internally when assigning vars, but tables, function, and userdata are treated like pointers
     {
-        retain();
-        return this;
+        return createPointerFromThis();
     }
     
-    TuiTable* trueCopy()
+    TuiPointer<TuiTable> trueCopy()
     {
-        TuiTable* tableCopy = new TuiTable(parentTable);
+        TuiPointer<TuiTable> tableCopy = Tui::createPointer<TuiTable>(parentTable);
         tableCopy->arrayObjects = arrayObjects;
         tableCopy->objectsByStringKey = objectsByStringKey;
         tableCopy->objectsByNumberKey = objectsByNumberKey;
@@ -90,7 +73,7 @@ public://functions
         tableCopy->set32 = set32;
         tableCopy->set64 = set64;
         
-        for(TuiRef* ref : arrayObjects)
+        for(TuiPointer<TuiRef> ref : arrayObjects)
         {
             tableCopy->arrayObjects.push_back(ref->copy());
         }
@@ -106,22 +89,20 @@ public://functions
     }
 
     
-    bool addHumanReadableKeyValuePair(const char* str, char** endptr, TuiDebugInfo* debugInfo, TuiRef** resultRef = nullptr);
+    bool addHumanReadableKeyValuePair(const char* str, char** endptr, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef = nullptr);
     
     virtual void printHumanReadableString(std::string& debugString, int indent = 0);
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset);
     
-    void set(const std::string& key, TuiRef* value, bool useCopy = true)
+    void set(const std::string& key, TuiPointer<TuiRef> value, bool useCopy = true)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* oldValue = objectsByStringKey[key];
+            TuiPointer<TuiRef> oldValue = objectsByStringKey[key];
             if(oldValue == value)
             {
                 return;
             }
-            
-            oldValue->release();
             
             if(!value || value->type() == Tui_ref_type_NIL)
             {
@@ -131,26 +112,24 @@ public://functions
         
         if(value && value->type() != Tui_ref_type_NIL)
         {
-            objectsByStringKey[key] = (useCopy ? value->copy() : value->retain());
+            objectsByStringKey[key] = (useCopy ? value->copy() : value);
         }
         
         if(onSet)
         {
-            onSet(this, key, value);
+            onSet(createPointerFromThis<TuiTable>(), key, value);
         }
     }
     
-    void set(uint32_t key, TuiRef* value)
+    void set(uint32_t key, TuiPointer<TuiRef> value)
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* oldValue = objectsByNumberKey[key];
+            TuiPointer<TuiRef> oldValue = objectsByNumberKey[key];
             if(oldValue == value)
             {
                 return;
             }
-            
-            oldValue->release();
             
             if(!value || value->type() == Tui_ref_type_NIL)
             {
@@ -164,19 +143,19 @@ public://functions
         }
     }
     
-    void push(TuiRef* value)
+    void push(TuiPointer<TuiRef> value)
     {
         arrayObjects.push_back(value->copy());
     }
     
     void pushString(const std::string& value)
     {
-        arrayObjects.push_back(new TuiString(value));
+        arrayObjects.push_back(Tui::createPointer<TuiString>(value));
     }
     
     void pushDouble(const double& value)
     {
-        arrayObjects.push_back(new TuiNumber(value));
+        arrayObjects.push_back(Tui::createPointer<TuiNumber>(value));
     }
     
     void pushBool(const bool& value)
@@ -186,25 +165,25 @@ public://functions
     
     void pushVec2(const dvec2& value)
     {
-        arrayObjects.push_back(new TuiVec2(value));
+        arrayObjects.push_back(Tui::createPointer<TuiVec2>(value));
     }
     
     void pushVec3(const dvec3& value)
     {
-        arrayObjects.push_back(new TuiVec3(value));
+        arrayObjects.push_back(Tui::createPointer<TuiVec3>(value));
     }
     
     void pushVec4(const dvec4& value)
     {
-        arrayObjects.push_back(new TuiVec4(value));
+        arrayObjects.push_back(Tui::createPointer<TuiVec4>(value));
     }
     
     void pushMat3(const dmat3& value)
     {
-        arrayObjects.push_back(new TuiMat3(value));
+        arrayObjects.push_back(Tui::createPointer<TuiMat3>(value));
     }
     
-    void insert(int insertIndex, TuiRef* value)
+    void insert(int insertIndex, TuiPointer<TuiRef> value)
     {
         if(insertIndex < arrayObjects.size())
         {
@@ -224,21 +203,16 @@ public://functions
         {
             return false;
         }
-        arrayObjects[index]->release();
         arrayObjects.erase(arrayObjects.begin() + index);
         return true;
     }
     
-    void replace(int replaceIndex, TuiRef* value) //this is used by table[x] = y. if x <= array.size(), then we will replace the object in the array, otherwise, set an objectByNumberKey value. Generally not a good idea to mix arrays and sets, we just do our best
+    void replace(int replaceIndex, TuiPointer<TuiRef> value) //this is used by table[x] = y. if x <= array.size(), then we will replace the object in the array, otherwise, set an objectByNumberKey value. Generally not a good idea to mix arrays and sets, we just do our best
     {
         
         if(replaceIndex < arrayObjects.size())
         {
-            TuiRef* existing = arrayObjects[replaceIndex];
-            if(existing)
-            {
-                existing->release();
-            }
+            TuiPointer<TuiRef> existing = arrayObjects[replaceIndex];
             arrayObjects[replaceIndex] = value->copy();
         }
         else if(replaceIndex == arrayObjects.size())
@@ -246,12 +220,7 @@ public://functions
             arrayObjects.push_back(value->copy());
         }
         else
-        {
-            if(objectsByNumberKey.count(replaceIndex) != 0)
-            {
-                objectsByNumberKey[replaceIndex]->release();
-            }
-            
+        {            
             objectsByNumberKey[replaceIndex] = value->copy();
         }
     }
@@ -266,7 +235,7 @@ public://functions
         return objectsByNumberKey.count(key) != 0;
     }
     
-    TuiRef* get(const std::string& key)
+    TuiPointer<TuiRef> get(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
@@ -275,7 +244,7 @@ public://functions
         return nullptr;
     }
     
-    TuiRef* get(const uint32_t numberKey)
+    TuiPointer<TuiRef> get(const uint32_t numberKey)
     {
         if(objectsByNumberKey.count(numberKey) != 0)
         {
@@ -284,7 +253,7 @@ public://functions
         return nullptr;
     }
     
-    TuiRef* getArray(int arrayIndex)
+    TuiPointer<TuiRef> getArray(int arrayIndex)
     {
         if(arrayIndex >= 0 && arrayIndex < arrayObjects.size())
         {
@@ -293,14 +262,14 @@ public://functions
         return nullptr;
     }
     
-    TuiTable* tableAtArrayIndex(int index)
+    TuiPointer<TuiTable> tableAtArrayIndex(int index)
     {
         if(index >= 0 && index < arrayObjects.size())
         {
-            TuiRef* ref = arrayObjects[index];
+            TuiPointer<TuiRef> ref = arrayObjects[index];
             if(ref->type() == Tui_ref_type_TABLE)
             {
-                return ((TuiTable*)ref);
+                return (Tui::castPointer<TuiTable>(ref));
             }
             else
             {
@@ -311,14 +280,14 @@ public://functions
     }
     
     
-    TuiTable* getTable(const std::string& key)
+    TuiPointer<TuiTable> getTable(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_TABLE)
             {
-                return ((TuiTable*)ref);
+                return (Tui::castPointer<TuiTable>(ref));
             }
             else
             {
@@ -328,7 +297,7 @@ public://functions
         return nullptr;
     }
     
-    void setTable(const std::string& key, TuiTable* value)
+    void setTable(const std::string& key, TuiPointer<TuiTable> value)
     {
         set(key, value);
     }
@@ -338,10 +307,10 @@ public://functions
         static const std::string nilString = "";
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_STRING)
             {
-                return ((TuiString*)ref)->value;
+                return (Tui::castPointer<TuiString>(ref)->value);
             }
             else
             {
@@ -353,9 +322,8 @@ public://functions
     
     void setString(const std::string& key, const std::string& value)
     {
-        TuiString* ref = new TuiString(value);
+        TuiPointer<TuiString> ref = Tui::createPointer<TuiString>(value);
         set(key, ref);
-        ref->release();
     }
     
     const std::string& getString(uint32_t key)
@@ -363,10 +331,10 @@ public://functions
         static const std::string nilString = "";
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_STRING)
             {
-                return ((TuiString*)ref)->value;
+                return (Tui::castPointer<TuiString>(ref)->value);
             }
             else
             {
@@ -378,9 +346,8 @@ public://functions
     
     void setString(uint32_t key, const std::string& value)
     {
-        TuiString* ref = new TuiString(value);
+        TuiPointer<TuiString> ref = Tui::createPointer<TuiString>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec2& getVec2(const std::string& key)
@@ -388,10 +355,10 @@ public://functions
         static const dvec2 nilVec2 = dvec2(0.0,0.0);
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_VEC2)
             {
-                return ((TuiVec2*)ref)->value;
+                return (Tui::castPointer<TuiVec2>(ref)->value);
             }
             else
             {
@@ -403,9 +370,8 @@ public://functions
     
     void setVec2(const std::string& key, const dvec2& value)
     {
-        TuiVec2* ref = new TuiVec2(value);
+        TuiPointer<TuiVec2> ref = Tui::createPointer<TuiVec2>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec2& getVec2(uint32_t key)
@@ -413,10 +379,10 @@ public://functions
         static const dvec2 nilVec2 = dvec2(0.0,0.0);
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_VEC2)
             {
-                return ((TuiVec2*)ref)->value;
+                return (Tui::castPointer<TuiVec2>(ref)->value);
             }
             else
             {
@@ -428,9 +394,8 @@ public://functions
     
     void setVec2(uint32_t key, const dvec2& value)
     {
-        TuiVec2* ref = new TuiVec2(value);
+        TuiPointer<TuiVec2> ref = Tui::createPointer<TuiVec2>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec3& getVec3(const std::string& key)
@@ -438,10 +403,10 @@ public://functions
         static const dvec3 nilVec3 = dvec3(0.0,0.0,0.0);
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_VEC3)
             {
-                return ((TuiVec3*)ref)->value;
+                return (Tui::castPointer<TuiVec3>(ref)->value);
             }
             else
             {
@@ -453,9 +418,8 @@ public://functions
     
     void setVec3(const std::string& key, const dvec3& value)
     {
-        TuiVec3* ref = new TuiVec3(value);
+        TuiPointer<TuiVec3> ref = Tui::createPointer<TuiVec3>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec3& getVec3(uint32_t key)
@@ -463,10 +427,10 @@ public://functions
         static const dvec3 nilVec3 = dvec3(0.0,0.0,0.0);
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_VEC3)
             {
-                return ((TuiVec3*)ref)->value;
+                return (Tui::castPointer<TuiVec3>(ref)->value);
             }
             else
             {
@@ -478,9 +442,8 @@ public://functions
     
     void setVec3(uint32_t key, const dvec3& value)
     {
-        TuiVec3* ref = new TuiVec3(value);
+        TuiPointer<TuiVec3> ref = Tui::createPointer<TuiVec3>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec4& getVec4(const std::string& key)
@@ -488,10 +451,10 @@ public://functions
         static const dvec4 nilVec4 = dvec4(0.0,0.0,0.0,0.0);
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_VEC4)
             {
-                return ((TuiVec4*)ref)->value;
+                return (Tui::castPointer<TuiVec4>(ref)->value);
             }
             else
             {
@@ -503,9 +466,8 @@ public://functions
     
     void setVec4(const std::string& key, const dvec4& value)
     {
-        TuiVec4* ref = new TuiVec4(value);
+        TuiPointer<TuiVec4> ref = Tui::createPointer<TuiVec4>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dvec4& getVec4(uint32_t key)
@@ -513,10 +475,10 @@ public://functions
         static const dvec4 nilVec4 = dvec4(0.0,0.0,0.0,0.0);
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_VEC4)
             {
-                return ((TuiVec4*)ref)->value;
+                return (Tui::castPointer<TuiVec4>(ref)->value);
             }
             else
             {
@@ -528,9 +490,8 @@ public://functions
     
     void setVec4(uint32_t key, const dvec4& value)
     {
-        TuiVec4* ref = new TuiVec4(value);
+        TuiPointer<TuiVec4> ref = Tui::createPointer<TuiVec4>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dmat3& getMat3(const std::string& key)
@@ -538,10 +499,10 @@ public://functions
         static const dmat3 identity = dmat3(1.0);
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_MAT3)
             {
-                return ((TuiMat3*)ref)->value;
+                return (Tui::castPointer<TuiMat3>(ref)->value);
             }
             else
             {
@@ -553,9 +514,8 @@ public://functions
     
     void setMat3(const std::string& key, const dmat3& value)
     {
-        TuiMat3* ref = new TuiMat3(value);
+        TuiPointer<TuiMat3> ref = Tui::createPointer<TuiMat3>(value);
         set(key, ref);
-        ref->release();
     }
     
     const dmat3& getMat3(uint32_t key)
@@ -563,10 +523,10 @@ public://functions
         static const dmat3 identity = dmat3(1.0);
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_MAT3)
             {
-                return ((TuiMat3*)ref)->value;
+                return (Tui::castPointer<TuiMat3>(ref)->value);
             }
             else
             {
@@ -578,19 +538,18 @@ public://functions
     
     void setMat3(uint32_t key, const dmat3& value)
     {
-        TuiMat3* ref = new TuiMat3(value);
+        TuiPointer<TuiMat3> ref = Tui::createPointer<TuiMat3>(value);
         set(key, ref);
-        ref->release();
     }
     
     double getDouble(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_NUMBER)
             {
-                return ((TuiNumber*)ref)->value;
+                return (Tui::castPointer<TuiNumber>(ref)->value);
             }
             else
             {
@@ -602,19 +561,18 @@ public://functions
     
     void setDouble(const std::string& key, double value)
     {
-        TuiNumber* ref = new TuiNumber(value);
+        TuiPointer<TuiNumber> ref = Tui::createPointer<TuiNumber>(value);
         set(key, ref);
-        ref->release();
     }
     
     double getDouble(uint32_t key)
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_NUMBER)
             {
-                return ((TuiNumber*)ref)->value;
+                return (Tui::castPointer<TuiNumber>(ref)->value);
             }
             else
             {
@@ -626,19 +584,18 @@ public://functions
     
     void setDouble(uint32_t key, double value)
     {
-        TuiNumber* ref = new TuiNumber(value);
+        TuiPointer<TuiNumber> ref = Tui::createPointer<TuiNumber>(value);
         set(key, ref);
-        ref->release();
     }
     
     uint8_t getInt8(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_8)
             {
-                return ((TuiNumber8*)ref)->value;
+                return (Tui::castPointer<TuiNumber8>(ref)->value);
             }
             else
             {
@@ -650,9 +607,8 @@ public://functions
     
     void setInt8(const std::string& key, uint8_t value)
     {
-        TuiNumber8* ref = new TuiNumber8(value);
+        TuiPointer<TuiNumber8> ref = Tui::createPointer<TuiNumber8>(value);
         set(key, ref);
-        ref->release();
     }
     
     
@@ -660,10 +616,10 @@ public://functions
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_8)
             {
-                return ((TuiNumber8*)ref)->value;
+                return (Tui::castPointer<TuiNumber8>(ref)->value);
             }
             else
             {
@@ -675,19 +631,18 @@ public://functions
     
     void setInt8(uint32_t key, uint8_t value)
     {
-        TuiNumber8* ref = new TuiNumber8(value);
+        TuiPointer<TuiNumber8> ref = Tui::createPointer<TuiNumber8>(value);
         set(key, ref);
-        ref->release();
     }
     
     uint16_t getInt16(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_16)
             {
-                return ((TuiNumber16*)ref)->value;
+                return (Tui::castPointer<TuiNumber16>(ref)->value);
             }
             else
             {
@@ -700,9 +655,8 @@ public://functions
     
     void setInt16(const std::string& key, uint16_t value)
     {
-        TuiNumber16* ref = new TuiNumber16(value);
+        TuiPointer<TuiNumber16> ref = Tui::createPointer<TuiNumber16>(value);
         set(key, ref);
-        ref->release();
     }
     
     
@@ -710,10 +664,10 @@ public://functions
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_16)
             {
-                return ((TuiNumber16*)ref)->value;
+                return (Tui::castPointer<TuiNumber16>(ref)->value);
             }
             else
             {
@@ -725,19 +679,18 @@ public://functions
     
     void setInt16(uint32_t key, uint16_t value)
     {
-        TuiNumber16* ref = new TuiNumber16(value);
+        TuiPointer<TuiNumber16> ref = Tui::createPointer<TuiNumber16>(value);
         set(key, ref);
-        ref->release();
     }
     
     uint32_t getInt32(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_32)
             {
-                return ((TuiNumber32*)ref)->value;
+                return (Tui::castPointer<TuiNumber32>(ref)->value);
             }
             else
             {
@@ -749,9 +702,8 @@ public://functions
     
     void setInt32(const std::string& key, uint32_t value)
     {
-        TuiNumber32* ref = new TuiNumber32(value);
+        TuiPointer<TuiNumber32> ref = Tui::createPointer<TuiNumber32>(value);
         set(key, ref);
-        ref->release();
     }
     
     
@@ -760,10 +712,10 @@ public://functions
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_32)
             {
-                return ((TuiNumber32*)ref)->value;
+                return (Tui::castPointer<TuiNumber32>(ref)->value);
             }
             else
             {
@@ -775,19 +727,18 @@ public://functions
     
     void setInt32(uint32_t key, uint32_t value)
     {
-        TuiNumber32* ref = new TuiNumber32(value);
+        TuiPointer<TuiNumber32> ref = Tui::createPointer<TuiNumber32>(value);
         set(key, ref);
-        ref->release();
     }
     
     uint64_t getInt64(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_64)
             {
-                return ((TuiNumber64*)ref)->value;
+                return (Tui::castPointer<TuiNumber64>(ref)->value);
             }
             else
             {
@@ -799,9 +750,8 @@ public://functions
     
     void setInt64(const std::string& key, uint64_t value)
     {
-        TuiNumber64* ref = new TuiNumber64(value);
+        TuiPointer<TuiNumber64> ref = Tui::createPointer<TuiNumber64>(value);
         set(key, ref);
-        ref->release();
     }
     
     
@@ -809,10 +759,10 @@ public://functions
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_NUMBER_64)
             {
-                return ((TuiNumber64*)ref)->value;
+                return (Tui::castPointer<TuiNumber64>(ref)->value);
             }
             else
             {
@@ -824,9 +774,8 @@ public://functions
     
     void setInt64(uint32_t key, uint64_t value)
     {
-        TuiNumber64* ref = new TuiNumber64(value);
+        TuiPointer<TuiNumber64> ref = Tui::createPointer<TuiNumber64>(value);
         set(key, ref);
-        ref->release();
     }
     
     
@@ -834,10 +783,10 @@ public://functions
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_BOOL)
             {
-                return ((TuiBool*)ref)->value;
+                return (Tui::castPointer<TuiBool>(ref)->value);
             }
             else
             {
@@ -849,7 +798,7 @@ public://functions
     
     void setBool(const std::string& key, bool value)
     {
-        TuiBool* ref = TUI_BOOL(value);
+        TuiPointer<TuiBool> ref = TUI_BOOL(value);
         set(key, ref);
     }
     
@@ -857,10 +806,10 @@ public://functions
     {
         if(objectsByNumberKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByNumberKey[key];
+            TuiPointer<TuiRef> ref = objectsByNumberKey[key];
             if(ref->type() == Tui_ref_type_BOOL)
             {
-                return ((TuiBool*)ref)->value;
+                return (Tui::castPointer<TuiBool>(ref)->value);
             }
             else
             {
@@ -872,18 +821,18 @@ public://functions
     
     void setBool(uint32_t key, bool value)
     {
-        TuiBool* ref = TUI_BOOL(value);
+        TuiPointer<TuiBool> ref = TUI_BOOL(value);
         set(key, ref);
     }
     
-    TuiFunction* getFunction(const std::string& key)
+    TuiPointer<TuiFunction> getFunction(const std::string& key)
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_FUNCTION)
             {
-                return ((TuiFunction*)ref);
+                return (Tui::castPointer<TuiFunction>(ref));
             }
             else
             {
@@ -893,14 +842,13 @@ public://functions
         return nullptr;
     }
     
-    void setFunction(const std::string& key, std::function<TuiRef*(TuiTable* args, TuiRef* existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> value)
+    void setFunction(const std::string& key, std::function<TuiPointer<TuiRef>(TuiPointer<TuiTable> args, TuiPointer<TuiRef> existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> value)
     {
-        TuiFunction* ref = new TuiFunction(value);
+        TuiPointer<TuiFunction> ref = Tui::createPointer<TuiFunction>(value);
         set(key, ref);
-        ref->release();
     }
     
-    void setFunction(const std::string& key, TuiFunction* value)
+    void setFunction(const std::string& key, TuiPointer<TuiFunction> value)
     {
         set(key, value);
     }
@@ -909,10 +857,10 @@ public://functions
     {
         if(objectsByStringKey.count(key) != 0)
         {
-            TuiRef* ref = objectsByStringKey[key];
+            TuiPointer<TuiRef> ref = objectsByStringKey[key];
             if(ref->type() == Tui_ref_type_USERDATA)
             {
-                return ((TuiUserData*)ref)->value;
+                return (Tui::castPointer<TuiUserData>(ref))->value;
             }
             else
             {
@@ -924,9 +872,8 @@ public://functions
     
     void setUserData(const std::string& key, void* value)
     {
-        TuiUserData* ref = new TuiUserData(value);
+        TuiPointer<TuiUserData> ref = Tui::createPointer<TuiUserData>(value);
         set(key, ref);
-        ref->release();
     }
     
 

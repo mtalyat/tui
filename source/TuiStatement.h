@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "TuiPointer.h"
+
 class TuiString;
 class TuiRef;
 
@@ -76,7 +78,7 @@ struct TuiExpression {
 
 struct TuiTokenMap {
     uint32_t tokenIndex = Tui_token_VAR_START_INDEX;
-    std::map<uint32_t, TuiRef*> refsByToken; //var names and constants. Captures may also be stored here when a function constructor is called
+    std::map<uint32_t, TuiPointer<TuiRef>> refsByToken; //var names and constants. Captures may also be stored here when a function constructor is called
     std::map<std::string, uint32_t> capturedTokensByVarName;
     std::map<std::string, uint32_t> localTokensByVarName;
 };
