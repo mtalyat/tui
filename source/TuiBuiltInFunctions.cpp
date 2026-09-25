@@ -78,7 +78,7 @@ static std::function tui_print = [](const TuiPointer<TuiTable>& args, const TuiP
 };
 
 
-TuiPointer<TuiTable> initSafeRootTable(TuiPointer<TuiFunction> permissionCallbackFunction, const std::string& sandBoxDir)
+TuiPointer<TuiTable> initSafeRootTable(const TuiPointer<TuiFunction>& permissionCallbackFunction, const std::string& sandBoxDir)
 {
     TuiPointer<TuiTable> rootTable = Tui::createPointer<TuiTable>();
     
@@ -109,7 +109,7 @@ TuiPointer<TuiTable> initRootTable()
 }
 
 //todo permissionCallbackFunction for error, exit, sleep, require, and sandBoxDir for require
-void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, TuiPointer<TuiFunction> permissionCallbackFunction)
+void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, const TuiPointer<TuiFunction>& permissionCallbackFunction)
 {
     //system(string) calls out to a system function eg. system("ls -la")
     if(permissionCallbackFunction)

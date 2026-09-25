@@ -14,7 +14,7 @@ namespace Tui {
 
 
 //TODO WARNING! This is not fully implemented, not to be trusted yet
-TuiPointer<TuiTable> initSafeRootTable(TuiPointer<TuiFunction> permissionCallbackFunction = nullptr, const std::string& sandBoxDir = ""); //pass permissionCallbackFunction to selectively give permission for some sensitive functions. Pass sandbox dir to restrict all file operations to within that directory.
+TuiPointer<TuiTable> initSafeRootTable(const TuiPointer<TuiFunction>& permissionCallbackFunction = nullptr, const std::string& sandBoxDir = ""); //pass permissionCallbackFunction to selectively give permission for some sensitive functions. Pass sandbox dir to restrict all file operations to within that directory.
 // eg. in tui: permissionCallbackFunction = function(functionName, args, hasPermissionCallback) {
 //      if(functionName == "system")
 //      {
@@ -42,7 +42,7 @@ static inline const TuiPointer<TuiTable>& getRootTable()
 }
 
 
-void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, TuiPointer<TuiFunction> permissionCallbackFunction = nullptr);
+void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, const TuiPointer<TuiFunction>& permissionCallbackFunction = nullptr);
 void addStringTable(const TuiPointer<TuiTable>& rootTable);
 void addTimeTable(const TuiPointer<TuiTable>& rootTable);
 void addTableTable(const TuiPointer<TuiTable>& rootTable);
