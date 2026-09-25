@@ -29,7 +29,7 @@ public://functions
     {
         return Tui::createPointer<TuiNumber>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiNumber>(other)->value);
     };
     
@@ -45,7 +45,7 @@ public://functions
     }
     virtual bool boolValue() {return true;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_NUMBER && Tui::castPointer<TuiNumber>(other)->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_NUMBER && Tui::castPointer<TuiNumber>(other)->value == value;}
     
     
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
@@ -72,7 +72,7 @@ public://functions
     {
         return Tui::createPointer<TuiNumber8>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiNumber8>(other)->value);
     };
     
@@ -84,7 +84,7 @@ public://functions
     }
     virtual bool boolValue() {return true;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && (
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && (
       (other->type() == Tui_ref_type_NUMBER_8 && Tui::castPointer<TuiNumber8>(other)->value == value))
         ;}
     
@@ -110,7 +110,7 @@ public://functions
     {
         return Tui::createPointer<TuiNumber16>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiNumber16>(other)->value);
     };
     
@@ -122,7 +122,7 @@ public://functions
     }
     virtual bool boolValue() {return true;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && (
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && (
       (other->type() == Tui_ref_type_NUMBER_16 && Tui::castPointer<TuiNumber16>(other)->value == value))
         ;}
     
@@ -149,7 +149,7 @@ public://functions
     {
         return Tui::createPointer<TuiNumber32>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiNumber32>(other)->value);
     };
     
@@ -161,7 +161,7 @@ public://functions
     }
     virtual bool boolValue() {return true;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && (
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && (
       (other->type() == Tui_ref_type_NUMBER_32 && Tui::castPointer<TuiNumber32>(other)->value == value))
         ;}
     
@@ -188,7 +188,7 @@ public://functions
     {
         return Tui::createPointer<TuiNumber64>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiNumber64>(other)->value);
     };
     
@@ -199,7 +199,7 @@ public://functions
     }
     virtual bool boolValue() {return true;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && (
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && (
       (other->type() == Tui_ref_type_NUMBER_64 && Tui::castPointer<TuiNumber64>(other)->value == value))
         ;}
     
@@ -231,11 +231,11 @@ public://functions
     {
         return createPointerFromThis();
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         TuiError("assign not supported for bool type");
     };
 
-    static TuiPointer<TuiBool> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) {
+    static TuiPointer<TuiBool> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) {
         const char* s = tuiSkipToNextChar(str, debugInfo);
         
         if(*s == 't' && *(s + 1) == 'r' && *(s + 2) == 'u' && *(s + 3) == 'e' && checkSymbolNameComplete(s + 4))
@@ -259,7 +259,7 @@ public://functions
     }
     virtual bool boolValue() {return value;}
     virtual double getNumberValue() {return value;}
-    virtual bool isEqual(TuiPointer<TuiRef> other)
+    virtual bool isEqual(const TuiPointer<TuiRef>& other)
     {
         if(!other)
         {
@@ -298,11 +298,11 @@ public://functions
     {
         return Tui::createPointer<TuiVec2>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiVec2>(other)->value);
     };
     
-    static TuiPointer<TuiVec2> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) {
+    static TuiPointer<TuiVec2> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) {
         const char* s = tuiSkipToNextChar(str, debugInfo);
         
         if(*s == 'v' && *(s + 1) == 'e' && *(s + 2) == 'c' && *(s + 3) == '2' && *(s + 4) == '(')
@@ -313,7 +313,7 @@ public://functions
             double values[2] = {0.0,0.0};
             for(int i = 0; i < 2; i++)
             {
-                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, (TuiPointer<TuiTable>)parent, debugInfo);
+                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, parent, debugInfo);
                 s = tuiSkipToNextChar(*endptr, debugInfo);
                 
                 if(!loadedValue || loadedValue->type() != Tui_ref_type_NUMBER)
@@ -356,7 +356,7 @@ public://functions
         return Tui::string_format("vec2(%s,%s)", Tui::doubleToString(value.x).c_str(), Tui::doubleToString(value.y).c_str());
     }
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_VEC2 && Tui::castPointer<TuiVec2>(other)->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_VEC2 && Tui::castPointer<TuiVec2>(other)->value == value;}
 
     
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
@@ -386,11 +386,11 @@ public://functions
     {
         return Tui::createPointer<TuiVec3>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiVec3>(other)->value);
     };
     
-    static TuiPointer<TuiVec3> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) {
+    static TuiPointer<TuiVec3> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) {
         const char* s = tuiSkipToNextChar(str, debugInfo);
         
         if(*s == 'v' && *(s + 1) == 'e' && *(s + 2) == 'c' && *(s + 3) == '3' && *(s + 4) == '(')
@@ -401,7 +401,7 @@ public://functions
             double values[3] = {0.0,0.0,0.0};
             for(int i = 0; i < 3; i++)
             {
-                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, (TuiPointer<TuiTable>)parent, debugInfo);
+                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, parent, debugInfo);
                 s = tuiSkipToNextChar(*endptr, debugInfo);
                 
                 if(!loadedValue || loadedValue->type() != Tui_ref_type_NUMBER)
@@ -444,7 +444,7 @@ public://functions
         return Tui::string_format("vec3(%s,%s,%s)", Tui::doubleToString(value.x).c_str(), Tui::doubleToString(value.y).c_str(), Tui::doubleToString(value.z).c_str());
     }
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_VEC3 && Tui::castPointer<TuiVec3>(other)->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_VEC3 && Tui::castPointer<TuiVec3>(other)->value == value;}
 
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
     {
@@ -475,11 +475,11 @@ public://functions
     {
         return Tui::createPointer<TuiVec4>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiVec4>(other)->value);
     };
     
-    static TuiPointer<TuiVec4> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) {
+    static TuiPointer<TuiVec4> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) {
         const char* s = tuiSkipToNextChar(str, debugInfo);
         
         if(*s == 'v' && *(s + 1) == 'e' && *(s + 2) == 'c' && *(s + 3) == '4' && *(s + 4) == '(')
@@ -490,7 +490,7 @@ public://functions
             double values[4] = {0.0,0.0,0.0,0.0};
             for(int i = 0; i < 4; i++)
             {
-                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, (TuiPointer<TuiTable>)parent, debugInfo);
+                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, parent, debugInfo);
                 s = tuiSkipToNextChar(*endptr, debugInfo);
                 
                 if(!loadedValue || loadedValue->type() != Tui_ref_type_NUMBER)
@@ -533,7 +533,7 @@ public://functions
         return Tui::string_format("vec4(%s,%s,%s,%s)", Tui::doubleToString(value.x).c_str(), Tui::doubleToString(value.y).c_str(), Tui::doubleToString(value.z).c_str(), Tui::doubleToString(value.w).c_str());
     }
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_VEC4 && Tui::castPointer<TuiVec4>(other)->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_VEC4 && Tui::castPointer<TuiVec4>(other)->value == value;}
 
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
     {
@@ -564,11 +564,11 @@ public://functions
     {
         return Tui::createPointer<TuiMat3>(value);
     }
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiMat3>(other)->value);
     };
     
-    static TuiPointer<TuiMat3> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) {
+    static TuiPointer<TuiMat3> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) {
         const char* s = tuiSkipToNextChar(str, debugInfo);
         
         if(*s == 'm' && *(s + 1) == 'a' && *(s + 2) == 't' && *(s + 3) == '3' && *(s + 4) == '(')
@@ -579,7 +579,7 @@ public://functions
             double values[9] = {0,0,0,0,0,0,0,0,0};
             for(int i = 0; i < 9; i++)
             {
-                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, (TuiPointer<TuiTable>)parent, debugInfo);
+                TuiPointer<TuiRef> loadedValue = TuiRef::loadExpression(s, endptr, nullptr, nullptr, parent, debugInfo);
                 s = tuiSkipToNextChar(*endptr, debugInfo);
                 
                 if(!loadedValue || loadedValue->type() != Tui_ref_type_NUMBER)
@@ -639,7 +639,7 @@ public://functions
                                   Tui::doubleToString(value[2].z).c_str());
     }
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_MAT3 && Tui::castPointer<TuiMat3>(other)->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_MAT3 && Tui::castPointer<TuiMat3>(other)->value == value;}
 
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
     {

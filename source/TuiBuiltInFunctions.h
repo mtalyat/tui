@@ -35,20 +35,20 @@ inline double nowTime()
 }
 
 
-static inline TuiPointer<TuiTable> getRootTable()
+static inline const TuiPointer<TuiTable>& getRootTable()
 {
     thread_local TuiPointer<TuiTable> rootTable = Tui::initRootTable();
     return rootTable;
 }
 
 
-void addBaseFunctions(TuiPointer<TuiTable> rootTable, TuiPointer<TuiFunction> permissionCallbackFunction = nullptr);
-void addStringTable(TuiPointer<TuiTable> rootTable);
-void addTimeTable(TuiPointer<TuiTable> rootTable);
-void addTableTable(TuiPointer<TuiTable> rootTable);
-void addMathTable(TuiPointer<TuiTable> rootTable);
-void addFileTable(TuiPointer<TuiTable> rootTable, const std::string& sandBoxDir = "");
-void addDebugTable(TuiPointer<TuiTable> rootTable);
+void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, TuiPointer<TuiFunction> permissionCallbackFunction = nullptr);
+void addStringTable(const TuiPointer<TuiTable>& rootTable);
+void addTimeTable(const TuiPointer<TuiTable>& rootTable);
+void addTableTable(const TuiPointer<TuiTable>& rootTable);
+void addMathTable(const TuiPointer<TuiTable>& rootTable);
+void addFileTable(const TuiPointer<TuiTable>& rootTable, const std::string& sandBoxDir = "");
+void addDebugTable(const TuiPointer<TuiTable>& rootTable);
 
 }
 

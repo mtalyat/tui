@@ -25,7 +25,7 @@ namespace Tui
 
     // Helper to cast a TuiPointer<T> instance to another type
     template<typename T, typename U>
-    inline TuiPointer<T> castPointer(TuiPointer<U> ptr)
+    inline TuiPointer<T> castPointer(const TuiPointer<U>& ptr)
     {
         return std::static_pointer_cast<T>(ptr);
     }

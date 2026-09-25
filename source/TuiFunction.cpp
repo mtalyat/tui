@@ -529,7 +529,7 @@ void serializeValue(const char* str,
 bool TuiFunction::recursivelySerializeExpression(const char* str,
                                                  char** endptr,
                                                  TuiExpression* expression,
-                                                 TuiPointer<TuiTable> parent,
+                                                 const TuiPointer<TuiTable>& parent,
                                                  TuiTokenMap* tokenMap,
                                                  TuiDebugInfo* debugInfo,
                                                  int operatorLevel,
@@ -905,7 +905,7 @@ static TuiStatement* serializeBasicStatement(const char* str,
 
 TuiStatement* TuiFunction::serializeForStatement(const char* str,
                                                  char** endptr,
-                                                 TuiPointer<TuiTable> parent,
+                                                 const TuiPointer<TuiTable>& parent,
                                                  TuiDebugInfo* debugInfo,
                                                  bool sharesParentScope,
                                                  bool isWhileLoop) //entry point is after 'for'
@@ -1095,7 +1095,7 @@ TuiStatement* TuiFunction::serializeForStatement(const char* str,
 
 bool TuiFunction::serializeFunctionBody(const char* str,
                                         char** endptr,
-                                        TuiPointer<TuiTable> parent,
+                                        const TuiPointer<TuiTable>& parent,
                                         TuiTokenMap* tokenMap,
                                         TuiDebugInfo* debugInfo,
                                         bool sharesParentScope,
@@ -1289,7 +1289,7 @@ bool TuiFunction::serializeFunctionBody(const char* str,
     return true;
 }
 
-TuiPointer<TuiFunction> TuiFunction::initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo) //assumes that '(' is currently in str.
+TuiPointer<TuiFunction> TuiFunction::initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo) //assumes that '(' is currently in str.
 {
     const char* s = str;
     if(*s == 'f'
@@ -1372,8 +1372,8 @@ TuiPointer<TuiFunction> TuiFunction::initWithHumanReadableString(const char* str
 
 TuiPointer<TuiRef> TuiFunction::runExpression(TuiExpression* expression,
                                    uint32_t* tokenPos,
-                                   TuiPointer<TuiRef> result,
-                                   TuiPointer<TuiTable> parent,
+                                   const TuiPointer<TuiRef>& result,
+                                   const TuiPointer<TuiTable>& parent,
                                    TuiTokenMap* tokenMap,
                                    TuiFunctionCallData* callData,
                                    TuiDebugInfo* debugInfo,
@@ -3496,8 +3496,8 @@ void loadTokens(TuiPointer<TuiTable> parent,
 }
 
 TuiPointer<TuiRef> TuiFunction::runStatement(TuiStatement* statement,
-                                  TuiPointer<TuiRef> result,
-                                  TuiPointer<TuiTable> parent,
+                                  const TuiPointer<TuiRef>& result,
+                                  const TuiPointer<TuiTable>& parent,
                                   TuiTokenMap* tokenMap,
                                   TuiFunctionCallData* callData,
                                   TuiDebugInfo* callingDebugInfo,
@@ -4141,8 +4141,8 @@ TuiPointer<TuiRef> TuiFunction::runStatement(TuiStatement* statement,
 
     
 TuiPointer<TuiRef> TuiFunction::runStatementArray(std::vector<TuiStatement*>& statements_,
-                                       TuiPointer<TuiRef> result,
-                                       TuiPointer<TuiTable> parent,
+                                       const TuiPointer<TuiRef>& result,
+                                       const TuiPointer<TuiTable>& parent,
                                        TuiTokenMap* tokenMap,
                                        TuiFunctionCallData* callData,
                                        TuiDebugInfo* debugInfo,
@@ -4172,7 +4172,7 @@ TuiFunction::TuiFunction(TuiPointer<TuiTable> parentTable_)
 }
 
 
-TuiFunction::TuiFunction(std::function<TuiPointer<TuiRef>(TuiPointer<TuiTable> args, TuiPointer<TuiRef> existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> func_)
+TuiFunction::TuiFunction(std::function<TuiPointer<TuiRef>(const TuiPointer<TuiTable>& args, const TuiPointer<TuiRef>& existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> func_)
 :TuiRef()
 {
     func = func_;
@@ -4183,8 +4183,8 @@ void TuiFunction::releaseAndRemoveTransientLoopTables()
     retainedTransientLoopTables.clear();
 }
 
-TuiPointer<TuiRef> TuiFunction::runTableConstruct(TuiPointer<TuiTable> state,
-             TuiPointer<TuiRef> existingResult,
+TuiPointer<TuiRef> TuiFunction::runTableConstruct(const TuiPointer<TuiTable>& state,
+             const TuiPointer<TuiRef>& existingResult,
              TuiDebugInfo* callingDebugInfo)
 {
     TuiPointer<TuiTable> functionStateTable = Tui::createPointer<TuiTable>(state);
@@ -4231,8 +4231,8 @@ TuiPointer<TuiRef> TuiFunction::runTableConstruct(TuiPointer<TuiTable> state,
 }
 
 
-TuiPointer<TuiRef> TuiFunction::call(TuiPointer<TuiTable> args,
-                          TuiPointer<TuiRef> existingResult,
+TuiPointer<TuiRef> TuiFunction::call(const TuiPointer<TuiTable>& args,
+                          const TuiPointer<TuiRef>& existingResult,
                           TuiFunctionCallData* incomingCallData,
                           TuiDebugInfo* callingDebugInfo)
 {
@@ -4309,14 +4309,14 @@ TuiPointer<TuiRef> TuiFunction::call(TuiPointer<TuiTable> args,
 
 
 TuiPointer<TuiRef> TuiFunction::call(const std::string& debugName,
-                          TuiPointer<TuiRef> arg1,
-                          TuiPointer<TuiRef> arg2,
-                          TuiPointer<TuiRef> arg3,
-                          TuiPointer<TuiRef> arg4,
-                          TuiPointer<TuiRef> arg5,
-                          TuiPointer<TuiRef> arg6,
-                          TuiPointer<TuiRef> arg7,
-                          TuiPointer<TuiRef> arg8)
+                          const TuiPointer<TuiRef>& arg1,
+                          const TuiPointer<TuiRef>& arg2,
+                          const TuiPointer<TuiRef>& arg3,
+                          const TuiPointer<TuiRef>& arg4,
+                          const TuiPointer<TuiRef>& arg5,
+                          const TuiPointer<TuiRef>& arg6,
+                          const TuiPointer<TuiRef>& arg7,
+                          const TuiPointer<TuiRef>& arg8)
 {
     TuiDebugInfo debugInfo;
     TuiDebugInfoPush(&debugInfo, debugName, 1);
@@ -4363,14 +4363,14 @@ TuiPointer<TuiRef> TuiFunction::call(const std::string& debugName,
 
 TuiPointer<TuiRef> TuiFunction::call(TuiFunctionCallData* incomingCallData,
                           TuiDebugInfo* callingDebugInfo,
-                          TuiPointer<TuiRef> arg1,
-                          TuiPointer<TuiRef> arg2,
-                          TuiPointer<TuiRef> arg3,
-                          TuiPointer<TuiRef> arg4,
-                          TuiPointer<TuiRef> arg5,
-                          TuiPointer<TuiRef> arg6,
-                          TuiPointer<TuiRef> arg7,
-                          TuiPointer<TuiRef> arg8)
+                          const TuiPointer<TuiRef>& arg1,
+                          const TuiPointer<TuiRef>& arg2,
+                          const TuiPointer<TuiRef>& arg3,
+                          const TuiPointer<TuiRef>& arg4,
+                          const TuiPointer<TuiRef>& arg5,
+                          const TuiPointer<TuiRef>& arg6,
+                          const TuiPointer<TuiRef>& arg7,
+                          const TuiPointer<TuiRef>& arg8)
 {
     TuiPointer<TuiTable> args = nullptr;
     if(arg1)

@@ -532,7 +532,7 @@ bool TuiTable::addHumanReadableKeyValuePair(const char* str, char** endptr, TuiD
 }
 
 
-TuiPointer<TuiTable> TuiTable::initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef, TuiPointer<TuiTable> inTable)
+TuiPointer<TuiTable> TuiTable::initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef, const TuiPointer<TuiTable>& inTable)
 {
     TuiPointer<TuiTable> table = inTable;
     
@@ -578,7 +578,7 @@ TuiPointer<TuiTable> TuiTable::initWithHumanReadableString(const char* str, char
 }
 
 
-void TuiTable::printSingleSubObject(std::string& debugString, int indent, TuiPointer<TuiRef> object)
+void TuiTable::printSingleSubObject(std::string& debugString, int indent, const TuiPointer<TuiRef>& object)
 {
     if(indent > 128)
     {

@@ -1,5 +1,4 @@
 
-
 #ifndef TuiStringUtils_h
 #define TuiStringUtils_h
 

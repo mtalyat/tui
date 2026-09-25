@@ -27,11 +27,11 @@ public:
     std::set<uint32_t> set32;
     std::set<uint64_t> set64; //note currently all numbers in tui scripts are read as doubles and stored in TuiNumbers, so a very large integer can loose precision
     
-    std::function<void(TuiPointer<TuiRef> table, const std::string& key, TuiPointer<TuiRef> value)> onSet;
+    std::function<void(const TuiPointer<TuiRef>& table, const std::string& key, const TuiPointer<TuiRef>& value)> onSet;
     
 private:
     
-    void printSingleSubObject(std::string& debugString, int indent, TuiPointer<TuiRef> object);
+    void printSingleSubObject(std::string& debugString, int indent, const TuiPointer<TuiRef>& object);
 
 public://functions
     
@@ -45,7 +45,7 @@ public://functions
         TuiTable::initWithHumanReadableString(cString, &endPtr, parentTable_, &debugInfo, nullptr, createPointerFromThis<TuiTable>());
     }
     
-    static TuiPointer<TuiTable> initWithHumanReadableString(const char* str, char** endptr, TuiPointer<TuiTable> parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef = nullptr, TuiPointer<TuiTable> inTable = nullptr);
+    static TuiPointer<TuiTable> initWithHumanReadableString(const char* str, char** endptr, const TuiPointer<TuiTable>& parent, TuiDebugInfo* debugInfo, TuiPointer<TuiRef>* resultRef = nullptr, const TuiPointer<TuiTable>& inTable = nullptr);
     
     virtual ~TuiTable() {}
 
@@ -55,7 +55,7 @@ public://functions
     virtual std::string getStringValue() {return "table";}
     virtual std::string getDebugStringValue() {return getDebugString();}
     virtual bool boolValue() {return true;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other.get() == this;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other.get() == this;}
     
     virtual TuiPointer<TuiRef> copy() //NOTE! This is not a true copy, use trueCopy() below. copy() is called internally when assigning vars, but tables, function, and userdata are treated like pointers
     {
@@ -94,7 +94,7 @@ public://functions
     virtual void printHumanReadableString(std::string& debugString, int indent = 0);
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset);
     
-    void set(const std::string& key, TuiPointer<TuiRef> value, bool useCopy = true)
+    void set(const std::string& key, const TuiPointer<TuiRef>& value, bool useCopy = true)
     {
         if(objectsByStringKey.count(key) != 0)
         {
@@ -121,7 +121,7 @@ public://functions
         }
     }
     
-    void set(uint32_t key, TuiPointer<TuiRef> value)
+    void set(uint32_t key, const TuiPointer<TuiRef>& value)
     {
         if(objectsByNumberKey.count(key) != 0)
         {
@@ -143,7 +143,7 @@ public://functions
         }
     }
     
-    void push(TuiPointer<TuiRef> value)
+    void push(const TuiPointer<TuiRef>& value)
     {
         arrayObjects.push_back(value->copy());
     }
@@ -183,7 +183,7 @@ public://functions
         arrayObjects.push_back(Tui::createPointer<TuiMat3>(value));
     }
     
-    void insert(int insertIndex, TuiPointer<TuiRef> value)
+    void insert(int insertIndex, const TuiPointer<TuiRef>& value)
     {
         if(insertIndex < arrayObjects.size())
         {
@@ -207,7 +207,7 @@ public://functions
         return true;
     }
     
-    void replace(int replaceIndex, TuiPointer<TuiRef> value) //this is used by table[x] = y. if x <= array.size(), then we will replace the object in the array, otherwise, set an objectByNumberKey value. Generally not a good idea to mix arrays and sets, we just do our best
+    void replace(int replaceIndex, const TuiPointer<TuiRef>& value) //this is used by table[x] = y. if x <= array.size(), then we will replace the object in the array, otherwise, set an objectByNumberKey value. Generally not a good idea to mix arrays and sets, we just do our best
     {
         
         if(replaceIndex < arrayObjects.size())
@@ -297,7 +297,7 @@ public://functions
         return nullptr;
     }
     
-    void setTable(const std::string& key, TuiPointer<TuiTable> value)
+    void setTable(const std::string& key, const TuiPointer<TuiTable>& value)
     {
         set(key, value);
     }
@@ -842,13 +842,13 @@ public://functions
         return nullptr;
     }
     
-    void setFunction(const std::string& key, std::function<TuiPointer<TuiRef>(TuiPointer<TuiTable> args, TuiPointer<TuiRef> existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> value)
+    void setFunction(const std::string& key, std::function<TuiPointer<TuiRef>(const TuiPointer<TuiTable>& args, const TuiPointer<TuiRef>& existingResult, TuiFunctionCallData* incomingCallData, TuiDebugInfo* callingDebugInfo)> value)
     {
         TuiPointer<TuiFunction> ref = Tui::createPointer<TuiFunction>(value);
         set(key, ref);
     }
     
-    void setFunction(const std::string& key, TuiPointer<TuiFunction> value)
+    void setFunction(const std::string& key, const TuiPointer<TuiFunction>& value)
     {
         set(key, value);
     }

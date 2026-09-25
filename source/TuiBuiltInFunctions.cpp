@@ -109,7 +109,7 @@ TuiPointer<TuiTable> initRootTable()
 }
 
 //todo permissionCallbackFunction for error, exit, sleep, require, and sandBoxDir for require
-void addBaseFunctions(TuiPointer<TuiTable> rootTable, TuiPointer<TuiFunction> permissionCallbackFunction)
+void addBaseFunctions(const TuiPointer<TuiTable>& rootTable, TuiPointer<TuiFunction> permissionCallbackFunction)
 {
     //system(string) calls out to a system function eg. system("ls -la")
     if(permissionCallbackFunction)
@@ -301,7 +301,7 @@ void addBaseFunctions(TuiPointer<TuiTable> rootTable, TuiPointer<TuiFunction> pe
     });
 }
 
-void addStringTable(TuiPointer<TuiTable> rootTable)
+void addStringTable(const TuiPointer<TuiTable>& rootTable)
 {
     //************
     //string
@@ -606,7 +606,7 @@ void addStringTable(TuiPointer<TuiTable> rootTable)
     
 }
 
-void addTimeTable(TuiPointer<TuiTable> rootTable)
+void addTimeTable(const TuiPointer<TuiTable>& rootTable)
 {
     //************
     //time
@@ -621,7 +621,7 @@ void addTimeTable(TuiPointer<TuiTable> rootTable)
     });
 }
 
-void addTableTable(TuiPointer<TuiTable> rootTable)
+void addTableTable(const TuiPointer<TuiTable>& rootTable)
 {
     //************
     //table
@@ -996,7 +996,7 @@ void addTableTable(TuiPointer<TuiTable> rootTable)
     
 }
 
-void addMathTable(TuiPointer<TuiTable> rootTable)
+void addMathTable(const TuiPointer<TuiTable>& rootTable)
 {
     //************
     //math
@@ -1386,7 +1386,7 @@ void addMathTable(TuiPointer<TuiTable> rootTable)
     });
 }
 
-void addFileTable(TuiPointer<TuiTable> rootTable, const std::string& sandBoxDir) //TODO! sandBoxDir ignored
+void addFileTable(const TuiPointer<TuiTable>& rootTable, const std::string& sandBoxDir) //TODO! sandBoxDir ignored
 {
     
     //************
@@ -1749,7 +1749,7 @@ void addFileTable(TuiPointer<TuiTable> rootTable, const std::string& sandBoxDir)
     
 }
 
-void addDebugTable(TuiPointer<TuiTable> rootTable)
+void addDebugTable(const TuiPointer<TuiTable>& rootTable)
 {
     //************
     //debug

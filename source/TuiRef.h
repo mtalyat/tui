@@ -381,8 +381,8 @@ public://functions
     };
     
     virtual TuiPointer<TuiRef> copy() = 0;
-    virtual void assign(TuiPointer<TuiRef> other) {};
-    virtual bool isEqual(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {};
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {
         return (!other || other->type() == Tui_ref_type_NIL);
     }
     
@@ -428,7 +428,7 @@ public:
     TuiNil() {}
     virtual ~TuiNil() {}
     virtual TuiPointer<TuiRef> copy() {return createPointerFromThis();}
-    virtual void assign(TuiPointer<TuiRef> other) {};
+    virtual void assign(const TuiPointer<TuiRef>& other) {};
     
     virtual void release() {}
 
@@ -436,7 +436,7 @@ public:
     virtual std::string getTypeName() {return "nil";}
     virtual std::string getStringValue() {return "nil";}
     virtual bool boolValue() {return false;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return (!other || other->type() == Tui_ref_type_NIL );}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return (!other || other->type() == Tui_ref_type_NIL );}
     
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
     {
@@ -464,7 +464,7 @@ public:
         return createPointerFromThis();
     }
     
-    virtual void assign(TuiPointer<TuiRef> other) {
+    virtual void assign(const TuiPointer<TuiRef>& other) {
         value = (Tui::castPointer<TuiUserData>(other))->value;
     };
     
@@ -474,7 +474,7 @@ public:
         return Tui::string_format("%p", value);
     }
     virtual bool boolValue() {return value != nullptr;}
-    virtual bool isEqual(TuiPointer<TuiRef> other) {return other && other->type() == Tui_ref_type_USERDATA && (Tui::castPointer<TuiUserData>(other))->value == value;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other && other->type() == Tui_ref_type_USERDATA && (Tui::castPointer<TuiUserData>(other))->value == value;}
     
     virtual void serializeBinaryToBuffer(std::string& buffer, int* currentOffset)
     {
