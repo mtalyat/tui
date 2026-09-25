@@ -134,7 +134,7 @@ public: //class functions
     virtual uint8_t type() { return Tui_ref_type_FUNCTION; }
     virtual std::string getTypeName() {return "function";}
     virtual std::string getStringValue() {return "function";}
-    virtual bool isEqual(const TuiPointer<TuiRef> other) {return other.get() == this;}
+    virtual bool isEqual(const TuiPointer<TuiRef>& other) {return other.get() == this;}
     
     virtual bool boolValue() {return true;}
     
